@@ -133,12 +133,14 @@ class Tcp extends AbstractConnection {
         }
 
         // sending request
-        fwrite($this->socket, $request->getRequest($this->spec));
-        fwrite($this->socket, "\n");
+        $msg = $request->getRequest($this->spec);
+        $length = pack('N', strlen($msg));
+        fwrite($this->socket, $length . $msg);
         fflush($this->socket);
 
-        // read server respons
-        $response = fgets($this->socket);
+        // read server response
+        $length = unpack('Nval', fread($this->socket, 4))['val'];
+        $response = fread($this->socket, $length);
 
         if ($response === false) {
             throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed');
