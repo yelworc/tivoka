@@ -215,7 +215,7 @@ class Request
                 if(isset($assoc['error']) === FALSE) return FALSE;
                 return array(
                     'id' => $assoc['id'],
-                    'error' => array('data' => $assoc['error'])
+                    'error' => $assoc['error']
                 );
         }
     }
