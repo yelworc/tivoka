@@ -140,7 +140,15 @@ class Tcp extends AbstractConnection {
 
         // read server response
         $length = unpack('Nval', fread($this->socket, 4))['val'];
-        $response = fread($this->socket, $length);
+        $response = '';
+        while ($length > 0) {
+            $chunk = fread($this->socket, $length);
+            if (strlen($chunk) == 0) {
+                throw new Exception\ConnectionException('No more bytes (EOF?)');
+            }
+            $response .= $chunk;
+            $length -= strlen($chunk);
+        }
 
         if ($response === false) {
             throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed');
