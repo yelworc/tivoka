@@ -39,7 +39,7 @@ use Tivoka\Client\Request;
  * @package Tivoka
  */
 class Tcp extends AbstractConnection {
-    
+
 
     /**
      * Server host.
@@ -84,7 +84,7 @@ class Tcp extends AbstractConnection {
             fclose($this->socket);
         }
     }
-    
+
     /**
      * Changes timeout.
      * @param int $timeout
@@ -93,12 +93,12 @@ class Tcp extends AbstractConnection {
     public function setTimeout($timeout)
     {
     	$this->timeout = $timeout;
-    
+
     	// change timeout for already initialized connection
     	if (isset($this->socket)) {
     		stream_set_timeout($this->socket, $timeout);
     	}
-    
+
     	return $this;
     }
 
@@ -140,7 +140,15 @@ class Tcp extends AbstractConnection {
 
         // read server response
         $length = unpack('Nval', fread($this->socket, 4))['val'];
-        $response = fread($this->socket, $length);
+        $response = '';
+        while ($length > 0) {
+            $chunk = fread($this->socket, $length);
+            if (strlen($chunk) == 0) {
+                throw new Exception\ConnectionException('No more bytes (EOF?)');
+            }
+            $response .= $chunk;
+            $length -= strlen($chunk);
+        }
 
         if ($response === false) {
             throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed');
