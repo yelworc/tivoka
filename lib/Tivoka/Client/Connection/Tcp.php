@@ -102,6 +102,20 @@ class Tcp extends AbstractConnection {
     	return $this;
     }
 
+    private function read_n($length)
+    {
+        $response = '';
+        while ($length > 0) {
+            $chunk = fread($this->socket, $length);
+            if ($chunk === false || strlen($chunk) == 0) {
+                throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed, no mroe bytes');
+            }
+            $response .= $chunk;
+            $length -= strlen($chunk);
+        }
+        return $response;
+    }
+
     /**
      * Sends a JSON-RPC request over plain TCP.
      * @param Request $request,... A Tivoka request.
@@ -139,12 +153,8 @@ class Tcp extends AbstractConnection {
         fflush($this->socket);
 
         // read server response
-        $length = unpack('Nval', fread($this->socket, 4))['val'];
-        $response = fread($this->socket, $length);
-
-        if ($response === false) {
-            throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed');
-        }
+        $length = unpack('Nval', $this->read_n(4))['val'];
+        $response = $this->read_n($length);
 
         $request->setResponse($response);
         return $request;
