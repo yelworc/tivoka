@@ -108,7 +108,7 @@ class Tcp extends AbstractConnection {
         while ($length > 0) {
             $chunk = fread($this->socket, $length);
             if ($chunk === false || strlen($chunk) == 0) {
-                throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed, no mroe bytes');
+                throw new Exception\ConnectionException('Connection to "' . $this->host . ':' . $this->port . '" failed, no more bytes');
             }
             $response .= $chunk;
             $length -= strlen($chunk);
